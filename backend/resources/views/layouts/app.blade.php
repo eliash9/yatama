@@ -17,6 +17,13 @@
       </div>
       @auth
       <nav class="flex-1 overflow-y-auto px-3 py-4 text-sm">
+        @role('admin')
+        <div class="mb-4">
+          <div class="px-3 text-gray-500 uppercase tracking-wide text-xs mb-2">Admin</div>
+          <a href="{{ route('admin.users.index') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('admin.users.*') ? 'bg-gray-100 font-medium' : '' }}">Pengguna</a>
+          <a href="{{ route('admin.roles.index') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('admin.roles.*') ? 'bg-gray-100 font-medium' : '' }}">Peran & Permissions</a>
+        </div>
+        @endrole
         <div class="mb-4">
           <div class="px-3 text-gray-500 uppercase tracking-wide text-xs mb-2">Umum</div>
           <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('dashboard') ? 'bg-gray-100 font-medium' : '' }}">Dashboard</a>

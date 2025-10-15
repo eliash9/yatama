@@ -15,6 +15,8 @@ use App\Http\Controllers\Finance\CashbookPageController;
 use App\Http\Controllers\Finance\ReportPageController;
 use App\Http\Controllers\Finance\DisbursementPageController;
 use App\Http\Controllers\Admin\DemoController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\RoleController as AdminRoleController;
 
 Route::get('/', function () { return redirect('/dashboard'); });
 
@@ -67,3 +69,13 @@ Route::prefix('finance')->name('finance.')->middleware(['auth','role:admin|benda
 
 // Admin-only util
 Route::post('/admin/demo-reset', [DemoController::class,'reset'])->middleware(['auth','role:admin'])->name('admin.demo_reset');
+
+Route::prefix('admin')->name('admin.')->middleware(['auth','role:admin'])->group(function(){
+    Route::get('users', [AdminUserController::class,'index'])->name('users.index');
+    Route::get('users/{user}/edit', [AdminUserController::class,'edit'])->name('users.edit');
+    Route::put('users/{user}', [AdminUserController::class,'update'])->name('users.update');
+
+    Route::get('roles', [AdminRoleController::class,'index'])->name('roles.index');
+    Route::post('roles/permissions', [AdminRoleController::class,'storePermission'])->name('roles.permissions.store');
+    Route::put('roles/{role}/permissions', [AdminRoleController::class,'updateRolePermissions'])->name('roles.permissions.update');
+});
