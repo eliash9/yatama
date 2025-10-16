@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -39,5 +40,28 @@ class UserController extends Controller
         $user->syncRoles($roles);
         return redirect()->route('admin.users.index')->with('status','Peran pengguna diperbarui');
     }
-}
 
+    public function create()
+    {
+        $roles = Role::orderBy('name')->get(['id','name']);
+        return view('admin.users.create', compact('roles'));
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'roles' => 'nullable|array',
+            'roles.*' => 'string',
+        ]);
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+        ]);
+        if (!empty($data['roles'])) { $user->syncRoles($data['roles']); }
+        return redirect()->route('admin.users.index')->with('status','Pengguna ditambahkan');
+    }
+}

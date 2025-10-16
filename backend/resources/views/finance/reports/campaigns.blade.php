@@ -2,6 +2,12 @@
 @section('content')
 <h2 class="text-xl font-semibold mb-4">Realisasi Kampanye/Program</h2>
 
+@php $qs = http_build_query(request()->query()); @endphp
+<div class="mb-4 flex gap-2 text-sm">
+  <a href="{{ route('finance.reports.campaigns.xlsx') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export Excel</a>
+  <a href="{{ route('finance.reports.campaigns.pdf') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export PDF</a>
+</div>
+
 <div class="bg-white rounded shadow divide-y">
   @forelse($programs as $p)
     @php $target = (int)($p->target_amount ?? 0); $total = (int)($totals[$p->id] ?? 0); $pct = $target ? min(100, round($total/$target*100)) : null; @endphp
@@ -24,4 +30,3 @@
   @endforelse
 </div>
 @endsection
-

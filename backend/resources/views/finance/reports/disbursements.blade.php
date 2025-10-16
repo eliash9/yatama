@@ -7,6 +7,12 @@
   <input type="date" name="to" value="{{ $to }}" class="border rounded px-3 py-2" />
   <button class="px-3 py-2 bg-gray-100 rounded">Terapkan</button>
   <a href="{{ route('finance.reports.disbursements') }}" class="px-3 py-2 underline">Reset</a>
+  @php $qs = http_build_query(request()->only('from','to')); @endphp
+  <span class="ml-auto flex gap-2">
+    <a href="{{ route('finance.reports.disbursements.csv') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export CSV</a>
+    <a href="{{ route('finance.reports.disbursements.xlsx') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export Excel</a>
+    <a href="{{ route('finance.reports.disbursements.pdf') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export PDF</a>
+  </span>
 </form>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -65,4 +71,3 @@
 
 <div class="mt-4">{{ $rows->links() }}</div>
 @endsection
-

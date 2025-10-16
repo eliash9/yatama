@@ -4,6 +4,7 @@
 
 <div class="flex items-center justify-between mb-4">
   <h2 class="text-xl font-semibold">Pengguna</h2>
+  <a href="{{ route('admin.users.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded">Tambah Pengguna</a>
 </div>
 
 <form method="GET" class="mb-4 flex gap-2">
@@ -32,4 +33,3 @@
 
 <div class="mt-4">{{ $users->links() }}</div>
 @endsection
-

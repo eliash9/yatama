@@ -2,6 +2,12 @@
 @section('content')
 <h2 class="text-xl font-semibold mb-4">Saldo Akun & Program</h2>
 
+@php $qs = http_build_query(request()->query()); @endphp
+<div class="mb-4 flex gap-2 text-sm">
+  <a href="{{ route('finance.reports.balances.xlsx') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export Excel</a>
+  <a href="{{ route('finance.reports.balances.pdf') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export PDF</a>
+</div>
+
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
   <div class="bg-white rounded shadow p-4">
     <h3 class="font-medium mb-2">Saldo per Akun</h3>
@@ -38,4 +44,3 @@
   </div>
 </div>
 @endsection
-

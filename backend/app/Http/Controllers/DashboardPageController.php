@@ -21,11 +21,11 @@ class DashboardPageController extends Controller
         if ($unitId) $pengajuanQuery->where('unit_id', $unitId);
         if ($periodeId) $pengajuanQuery->where('periode_id', $periodeId);
 
-        $counts = $pengajuanQuery->clone()
+        $counts = (clone $pengajuanQuery)
             ->select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')->pluck('count','status')->toArray();
 
-        $totalDimintaApproved = (int) $pengajuanQuery->clone()
+        $totalDimintaApproved = (int) (clone $pengajuanQuery)
             ->whereIn('status', ['disetujui','dicairkan','selesai'])
             ->sum('total_diminta');
 
@@ -53,15 +53,15 @@ class DashboardPageController extends Controller
                   ->orWhereHas('program', function($qq) use ($filters){ $qq->where('unit_id',$filters['unit_id']); });
             });
         }
-        $incomeByChannel = $incomeQ->clone()
+        $incomeByChannel = (clone $incomeQ)
             ->select('channel', DB::raw('SUM(amount) as total'))
             ->groupBy('channel')->pluck('total','channel');
-        $incomeByProgram = $incomeQ->clone()
+        $incomeByProgram = (clone $incomeQ)
             ->select(DB::raw("COALESCE(program_id, 0) as pid"), DB::raw('SUM(amount) as total'))
             ->groupBy('pid')->orderByDesc('total')->limit(5)->get();
         $programNames = \App\Models\Program::whereIn('id', $incomeByProgram->pluck('pid')->filter())->pluck('name','id');
 
-        $recent = $pengajuanQuery->clone()->orderByDesc('id')->limit(5)->get(['id','kode','judul','status','total_diminta','created_at']);
+        $recent = (clone $pengajuanQuery)->orderByDesc('id')->limit(5)->get(['id','kode','judul','status','total_diminta','created_at']);
 
         $units = Unit::orderBy('name')->get(['id','name']);
         $periodes = Periode::orderByDesc('start_date')->get(['id','name']);

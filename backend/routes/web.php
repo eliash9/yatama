@@ -49,15 +49,29 @@ Route::prefix('finance')->name('finance.')->middleware(['auth','role:admin|benda
     Route::resource('transactions', TransactionPageController::class)->only(['index','create','store','destroy'])->middleware(['role:admin|bendahara']);
     Route::get('cashbook', CashbookPageController::class)->name('cashbook');
     Route::get('reports/balances', [ReportPageController::class,'balances'])->name('reports.balances');
+    Route::get('reports/balances.xlsx', [ReportPageController::class,'balancesExcel'])->name('reports.balances.xlsx');
+    Route::get('reports/balances.pdf', [ReportPageController::class,'balancesPdf'])->name('reports.balances.pdf');
     Route::get('reports/incomes', [ReportPageController::class,'incomes'])->name('reports.incomes');
     Route::get('reports/incomes.csv', [ReportPageController::class,'incomesCsv'])->name('reports.incomes.csv');
+    Route::get('reports/incomes.xlsx', [ReportPageController::class,'incomesExcel'])->name('reports.incomes.xlsx');
+    Route::get('reports/incomes.pdf', [ReportPageController::class,'incomesPdf'])->name('reports.incomes.pdf');
     Route::get('reports/disbursements', [ReportPageController::class,'disbursements'])->name('reports.disbursements');
     Route::get('reports/disbursements.csv', [ReportPageController::class,'disbursementsCsv'])->name('reports.disbursements.csv');
+    Route::get('reports/disbursements.xlsx', [ReportPageController::class,'disbursementsExcel'])->name('reports.disbursements.xlsx');
+    Route::get('reports/disbursements.pdf', [ReportPageController::class,'disbursementsPdf'])->name('reports.disbursements.pdf');
     Route::get('reports/cashflow', [ReportPageController::class,'cashflow'])->name('reports.cashflow');
     Route::get('reports/cashflow.csv', [ReportPageController::class,'cashflowCsv'])->name('reports.cashflow.csv');
+    Route::get('reports/cashflow.xlsx', [ReportPageController::class,'cashflowExcel'])->name('reports.cashflow.xlsx');
+    Route::get('reports/cashflow.pdf', [ReportPageController::class,'cashflowPdf'])->name('reports.cashflow.pdf');
     Route::get('reports/funds', [ReportPageController::class,'funds'])->name('reports.funds');
+    Route::get('reports/funds.xlsx', [ReportPageController::class,'fundsExcel'])->name('reports.funds.xlsx');
+    Route::get('reports/funds.pdf', [ReportPageController::class,'fundsPdf'])->name('reports.funds.pdf');
     Route::get('reports/campaigns', [ReportPageController::class,'campaigns'])->name('reports.campaigns');
+    Route::get('reports/campaigns.xlsx', [ReportPageController::class,'campaignsExcel'])->name('reports.campaigns.xlsx');
+    Route::get('reports/campaigns.pdf', [ReportPageController::class,'campaignsPdf'])->name('reports.campaigns.pdf');
     Route::get('reports/operational-ratio', [ReportPageController::class,'operationalRatio'])->name('reports.operational_ratio');
+    Route::get('reports/operational-ratio.xlsx', [ReportPageController::class,'operationalRatioExcel'])->name('reports.operational_ratio.xlsx');
+    Route::get('reports/operational-ratio.pdf', [ReportPageController::class,'operationalRatioPdf'])->name('reports.operational_ratio.pdf');
     Route::resource('disbursements', DisbursementPageController::class);
     Route::post('disbursements/{disbursement}/submit', [DisbursementPageController::class,'submit'])->name('disbursements.submit')->middleware(['role:unit|admin|bendahara|pimpinan']);
     Route::post('disbursements/{disbursement}/assess', [DisbursementPageController::class,'assess'])->name('disbursements.assess')->middleware(['role:unit|admin|bendahara|pimpinan']);
@@ -72,6 +86,8 @@ Route::post('/admin/demo-reset', [DemoController::class,'reset'])->middleware(['
 
 Route::prefix('admin')->name('admin.')->middleware(['auth','role:admin'])->group(function(){
     Route::get('users', [AdminUserController::class,'index'])->name('users.index');
+    Route::get('users/create', [AdminUserController::class,'create'])->name('users.create');
+    Route::post('users', [AdminUserController::class,'store'])->name('users.store');
     Route::get('users/{user}/edit', [AdminUserController::class,'edit'])->name('users.edit');
     Route::put('users/{user}', [AdminUserController::class,'update'])->name('users.update');
 

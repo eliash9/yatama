@@ -7,6 +7,12 @@
   <input type="date" name="to" value="{{ $to }}" class="border rounded px-3 py-2" />
   <button class="px-3 py-2 bg-gray-100 rounded">Terapkan</button>
   <a href="{{ route('finance.reports.cashflow') }}" class="px-3 py-2 underline">Reset</a>
+  @php $qs = http_build_query(request()->only('from','to')); @endphp
+  <span class="ml-auto flex gap-2">
+    <a href="{{ route('finance.reports.cashflow.csv') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export CSV</a>
+    <a href="{{ route('finance.reports.cashflow.xlsx') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export Excel</a>
+    <a href="{{ route('finance.reports.cashflow.pdf') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export PDF</a>
+  </span>
 </form>
 
 <div class="bg-white rounded shadow p-4">
@@ -29,4 +35,3 @@
   });
 </script>
 @endsection
-

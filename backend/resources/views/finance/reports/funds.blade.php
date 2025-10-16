@@ -2,11 +2,16 @@
 @section('content')
 <h2 class="text-xl font-semibold mb-4">Dana Terikat vs Umum</h2>
 
+@php $qs = http_build_query(request()->only('from','to')); @endphp
 <form method="GET" class="mb-4 flex gap-2 text-sm">
   <input type="date" name="from" value="{{ $from }}" class="border rounded px-3 py-2" />
   <input type="date" name="to" value="{{ $to }}" class="border rounded px-3 py-2" />
   <button class="px-3 py-2 bg-gray-100 rounded">Terapkan</button>
   <a href="{{ route('finance.reports.funds') }}" class="px-3 py-2 underline">Reset</a>
+  <span class="ml-auto flex gap-2">
+    <a href="{{ route('finance.reports.funds.xlsx') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export Excel</a>
+    <a href="{{ route('finance.reports.funds.pdf') }}?{{ $qs }}" class="px-3 py-2 bg-white border rounded">Export PDF</a>
+  </span>
 </form>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -26,4 +31,3 @@
   </div>
 </div>
 @endsection
-

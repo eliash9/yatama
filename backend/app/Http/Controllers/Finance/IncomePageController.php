@@ -53,10 +53,19 @@ class IncomePageController extends Controller
             'program_id' => 'nullable|exists:programs,id',
             'ref_no' => 'nullable|string',
             'notes' => 'nullable|string',
-            'receipt' => 'nullable|file|max:5120',
+            'receipt' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
-        $data['receipt_no'] = $this->generateReceiptNo();
-        $income = Income::create($data);
+        // Generate unique receipt_no with simple retry to avoid race condition
+        for ($i=0; $i<3; $i++) {
+            try {
+                $data['receipt_no'] = $this->generateReceiptNo();
+                $income = Income::create($data);
+                break;
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($i === 2) { throw $e; }
+                usleep(50000); // 50ms before retry
+            }
+        }
 
         if ($request->hasFile('receipt')) {
             $path = $request->file('receipt')->store('receipts','public');
@@ -105,7 +114,7 @@ class IncomePageController extends Controller
             'program_id' => 'nullable|exists:programs,id',
             'ref_no' => 'nullable|string',
             'notes' => 'nullable|string',
-            'receipt' => 'nullable|file|max:5120',
+            'receipt' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
         $income->update($data);
         if ($request->hasFile('receipt')) {
