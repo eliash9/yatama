@@ -35,10 +35,10 @@ class BeneficiaryPageController extends Controller
             'type' => 'required|string',
             'name' => 'required|string',
             'date_of_birth' => 'nullable|date',
-            'guardian_name' => 'nullable|string',
+            'guardian_name' => 'nullable|string','national_id' => 'nullable|string','family_card_no' => 'nullable|string','gender' => 'nullable|string','education' => 'nullable|string','occupation' => 'nullable|string','guardian_phone' => 'nullable|string',
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
-            'address' => 'nullable|string',
+            'address' => 'nullable|string','city' => 'nullable|string','province' => 'nullable|string','postal_code' => 'nullable|string',
             'notes' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
@@ -60,10 +60,10 @@ class BeneficiaryPageController extends Controller
             'type' => 'required|string',
             'name' => 'required|string',
             'date_of_birth' => 'nullable|date',
-            'guardian_name' => 'nullable|string',
+            'guardian_name' => 'nullable|string','national_id' => 'nullable|string','family_card_no' => 'nullable|string','gender' => 'nullable|string','education' => 'nullable|string','occupation' => 'nullable|string','guardian_phone' => 'nullable|string',
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
-            'address' => 'nullable|string',
+            'address' => 'nullable|string','city' => 'nullable|string','province' => 'nullable|string','postal_code' => 'nullable|string',
             'notes' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
@@ -78,4 +78,5 @@ class BeneficiaryPageController extends Controller
         return redirect()->route('master.beneficiaries.index')->with('status','Penerima dihapus');
     }
 }
+
 

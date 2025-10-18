@@ -4,7 +4,7 @@
 
 <h2 class="text-xl font-semibold mb-4">{{ $row->exists ? 'Ubah Program/Kampanye' : 'Tambah Program/Kampanye' }}</h2>
 
-<form method="POST" action="{{ $row->exists ? route('master.programs.update',$row) : route('master.programs.store') }}" class="bg-white rounded shadow p-4 max-w-3xl">
+<form method="POST" enctype="multipart/form-data" action="{{ $row->exists ? route('master.programs.update',$row) : route('master.programs.store') }}" class="bg-white rounded shadow p-4 max-w-3xl">
   @csrf
   @if($row->exists) @method('PUT') @endif
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -52,6 +52,13 @@
       <label class="block text-sm font-medium">Deskripsi</label>
       <textarea name="description" class="w-full border rounded px-3 py-2">{{ old('description',$row->description) }}</textarea>
     </div>
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium">Banner (opsional)</label>
+      <input type="file" name="banner" accept="image/*" class="w-full border rounded px-3 py-2" />
+      @if($row->banner_url)
+        <div class="mt-2"><img src="/{{ $row->banner_url }}" alt="banner" class="h-24 rounded border" /></div>
+      @endif
+    </div>
     <div>
       <label class="block text-sm font-medium">Status</label>
       <input name="status" value="{{ old('status',$row->status) }}" placeholder="active/done" class="w-full border rounded px-3 py-2" />
@@ -63,4 +70,3 @@
   </div>
 </form>
 @endsection
-

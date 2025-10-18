@@ -21,7 +21,7 @@
     <table class="min-w-full text-sm">
       <tbody>
         @forelse($byBeneficiary as $b)
-          <tr class="border-t"><td class="py-2 pr-4">ID #{{ $b->beneficiary_id }}</td><td class="py-2 pr-4">Rp {{ number_format($b->total,0,',','.') }}</td></tr>
+          <tr class="border-t"><td class="py-2 pr-4">ID #{{ $b->beneficiary_id }}</td><td class="py-2 pr-4 text-right">Rp {{ number_format($b->total,0,',','.') }}</td></tr>
         @empty
           <tr><td class="py-4 text-gray-500">Tidak ada data</td></tr>
         @endforelse
@@ -33,7 +33,7 @@
     <table class="min-w-full text-sm">
       <tbody>
         @forelse($byRegion as $r)
-          <tr class="border-t"><td class="py-2 pr-4">{{ $r->region ?: '-' }}</td><td class="py-2 pr-4">Rp {{ number_format($r->total,0,',','.') }}</td></tr>
+          <tr class="border-t"><td class="py-2 pr-4">{{ $r->region ?: '-' }}</td><td class="py-2 pr-4 text-right">Rp {{ number_format($r->total,0,',','.') }}</td></tr>
         @empty
           <tr><td class="py-4 text-gray-500">Tidak ada data</td></tr>
         @endforelse
@@ -48,7 +48,7 @@
       <th class="py-2 px-3">Kode</th>
       <th class="py-2 px-3">Penerima</th>
       <th class="py-2 px-3">Program</th>
-      <th class="py-2 px-3">Jumlah</th>
+      <th class="py-2 px-3 text-right">Jumlah</th>
       <th class="py-2 px-3">Status</th>
       <th class="py-2 px-3">Tanggal</th>
     </tr></thead>
@@ -58,7 +58,7 @@
         <td class="py-2 px-3 font-mono">{{ $row->code }}</td>
         <td class="py-2 px-3">{{ $row->beneficiary->name }}</td>
         <td class="py-2 px-3">{{ $row->program->name }}</td>
-        <td class="py-2 px-3">Rp {{ number_format($row->amount,0,',','.') }}</td>
+        <td class="py-2 px-3 text-right">Rp {{ number_format($row->amount,0,',','.') }}</td>
         <td class="py-2 px-3">{{ $row->status }}</td>
         <td class="py-2 px-3">{{ $row->created_at->format('d M Y') }}</td>
       </tr>

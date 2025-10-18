@@ -34,15 +34,15 @@
         <th class="py-2 px-3">Tanggal</th>
         <th class="py-2 px-3">Ref</th>
         <th class="py-2 px-3">Memo</th>
-        <th class="py-2 px-3">Debit</th>
-        <th class="py-2 px-3">Kredit</th>
-        <th class="py-2 px-3">Saldo Berjalan</th>
+        <th class="py-2 px-3 text-right">Debit</th>
+        <th class="py-2 px-3 text-right">Kredit</th>
+        <th class="py-2 px-3 text-right">Saldo Berjalan</th>
       </tr>
     </thead>
     <tbody>
       <tr class="border-t bg-gray-50">
         <td class="py-2 px-3" colspan="5">Saldo Awal</td>
-        <td class="py-2 px-3 font-medium">Rp {{ number_format($opening,0,',','.') }}</td>
+        <td class="py-2 px-3 font-medium text-right">Rp {{ number_format($opening,0,',','.') }}</td>
       </tr>
       @php $running = $opening; @endphp
       @forelse($rows as $r)
@@ -51,9 +51,9 @@
           <td class="py-2 px-3">{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
           <td class="py-2 px-3 font-mono">#{{ $r->id }}</td>
           <td class="py-2 px-3">{{ $r->memo }}</td>
-          <td class="py-2 px-3">@if($debit) Rp {{ number_format($debit,0,',','.') }} @endif</td>
-          <td class="py-2 px-3">@if($kredit) Rp {{ number_format($kredit,0,',','.') }} @endif</td>
-          <td class="py-2 px-3">Rp {{ number_format($running,0,',','.') }}</td>
+          <td class="py-2 px-3 text-right">@if($debit) Rp {{ number_format($debit,0,',','.') }} @endif</td>
+          <td class="py-2 px-3 text-right">@if($kredit) Rp {{ number_format($kredit,0,',','.') }} @endif</td>
+          <td class="py-2 px-3 text-right">Rp {{ number_format($running,0,',','.') }}</td>
         </tr>
       @empty
         <tr><td colspan="6" class="py-6 text-center text-gray-500">Tidak ada transaksi pada rentang ini</td></tr>
@@ -63,4 +63,3 @@
 </div>
 @endif
 @endsection
-

@@ -190,10 +190,21 @@ class DisbursementPageController extends Controller
 
             // catat transaksi keluar
             $akun = $payment->account_id ? Account::find($payment->account_id) : null;
+            // Fallback to a default active account code if none provided
+            if (!$akun) {
+                if ($payment->channel === 'cash') {
+                    $akun = Account::where('is_active',true)->where('code','1.1.1')->first(); // Kas Tunai
+                } else {
+                    $akun = Account::where('is_active',true)->where('code','like','1.1.2.%')->orderBy('id')->first(); // Bank sub-accounts
+                    if (!$akun) {
+                        $akun = Account::where('is_active',true)->orderBy('id')->first();
+                    }
+                }
+            }
             Transaksi::create([
                 'tanggal'=>date('Y-m-d'),
                 'jenis'=>'kredit',
-                'akun_kas'=>$akun?->code ?? ($data['channel']==='cash'?'CASH':'BANK'),
+                'akun_kas'=>$akun?->code ?? 'UNKNOWN',
                 'account_id'=>$akun?->id,
                 'amount'=>$payment->amount,
                 'ref_type'=>'disbursement','ref_id'=>$disbursement->id,
@@ -207,4 +218,3 @@ class DisbursementPageController extends Controller
         return back()->with('status','Pembayaran berhasil dieksekusi');
     }
 }
-

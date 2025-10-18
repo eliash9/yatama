@@ -19,6 +19,22 @@
   <canvas id="cfChart" height="120"></canvas>
 </div>
 
+@if(isset($classification))
+<div class="mt-6 bg-white rounded shadow p-4">
+  <h3 class="font-medium mb-2">Klasifikasi Arus Kas</h3>
+  <table class="min-w-full text-sm">
+    <tbody>
+      <tr class="border-t"><td class="py-2 pr-4">Operasi (Masuk)</td><td class="py-2 pr-4 text-right">Rp {{ number_format($classification['operating_in'] ?? 0,0,',','.') }}</td></tr>
+      <tr class="border-t"><td class="py-2 pr-4">Operasi (Keluar)</td><td class="py-2 pr-4 text-right">Rp {{ number_format($classification['operating_out'] ?? 0,0,',','.') }}</td></tr>
+      <tr class="border-t font-medium"><td class="py-2 pr-4">Operasi (Bersih)</td><td class="py-2 pr-4 text-right">Rp {{ number_format($classification['operating_net'] ?? 0,0,',','.') }}</td></tr>
+      <tr class="border-t text-gray-500"><td class="py-2 pr-4">Investasi (Bersih)</td><td class="py-2 pr-4 text-right">Rp {{ number_format($classification['investing_net'] ?? 0,0,',','.') }}</td></tr>
+      <tr class="border-t text-gray-500"><td class="py-2 pr-4">Pendanaan (Bersih)</td><td class="py-2 pr-4 text-right">Rp {{ number_format($classification['financing_net'] ?? 0,0,',','.') }}</td></tr>
+    </tbody>
+  </table>
+  <p class="text-xs text-gray-500 mt-2">Catatan: klasifikasi Investasi/Pendanaan memerlukan penandaan tambahan pada transaksi dan saat ini ditampilkan 0.</p>
+</div>
+@endif
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
   const cf = @json($series);

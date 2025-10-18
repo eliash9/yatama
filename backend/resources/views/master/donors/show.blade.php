@@ -20,14 +20,14 @@
     <div class="bg-white rounded shadow overflow-x-auto">
       <div class="p-4 border-b font-medium">Riwayat Donasi</div>
       <table class="min-w-full text-sm">
-        <thead class="text-gray-600"><tr class="text-left"><th class="py-2 px-3">Tgl</th><th class="py-2 px-3">No Kwitansi</th><th class="py-2 px-3">Program</th><th class="py-2 px-3">Jumlah</th></tr></thead>
+        <thead class="text-gray-600"><tr class="text-left"><th class="py-2 px-3">Tgl</th><th class="py-2 px-3">No Kwitansi</th><th class="py-2 px-3">Program</th><th class="py-2 px-3 text-right">Jumlah</th></tr></thead>
         <tbody>
           @forelse($rows as $r)
           <tr class="border-t">
             <td class="py-2 px-3">{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
             <td class="py-2 px-3 font-mono"><a class="text-blue-600 hover:underline" href="{{ route('finance.incomes.show',$r) }}">{{ $r->receipt_no }}</a></td>
             <td class="py-2 px-3">{{ $r->program->name ?? 'General Fund' }}</td>
-            <td class="py-2 px-3">Rp {{ number_format($r->amount,0,',','.') }}</td>
+            <td class="py-2 px-3 text-right">Rp {{ number_format($r->amount,0,',','.') }}</td>
           </tr>
           @empty
           <tr><td colspan="4" class="py-6 text-center text-gray-500">Belum ada donasi</td></tr>
@@ -55,4 +55,3 @@
   </div>
 </div>
 @endsection
-

@@ -44,9 +44,11 @@
           <a href="{{ route('finance.cashbook') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.cashbook') ? 'bg-gray-100 font-medium' : '' }}">Buku Kas</a>
           <div class="px-3 text-gray-400 text-xs mt-2">Pelaporan</div>
           <a href="{{ route('finance.reports.balances') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.reports.balances') ? 'bg-gray-100 font-medium' : '' }}">Saldo Akun & Program</a>
+          <a href="{{ route('finance.reports.balance_sheet') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.reports.balance_sheet') ? 'bg-gray-100 font-medium' : '' }}">Neraca</a>
           <a href="{{ route('finance.reports.incomes') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.reports.incomes') ? 'bg-gray-100 font-medium' : '' }}">Penerimaan</a>
           <a href="{{ route('finance.reports.disbursements') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.reports.disbursements') ? 'bg-gray-100 font-medium' : '' }}">Penyaluran</a>
           <a href="{{ route('finance.reports.cashflow') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.reports.cashflow') ? 'bg-gray-100 font-medium' : '' }}">Arus Kas</a>
+          <a href="{{ route('finance.reports.activity') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.reports.activity') ? 'bg-gray-100 font-medium' : '' }}">Aktivitas</a>
           <a href="{{ route('finance.reports.funds') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.reports.funds') ? 'bg-gray-100 font-medium' : '' }}">Dana Terikat vs Umum</a>
           <a href="{{ route('finance.reports.campaigns') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.reports.campaigns') ? 'bg-gray-100 font-medium' : '' }}">Realisasi Kampanye</a>
           <a href="{{ route('finance.reports.operational_ratio') }}" class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->routeIs('finance.reports.operational_ratio') ? 'bg-gray-100 font-medium' : '' }}">Rasio Operasional</a>

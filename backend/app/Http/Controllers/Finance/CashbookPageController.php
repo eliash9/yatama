@@ -15,7 +15,7 @@ class CashbookPageController extends Controller
         $accountId = $request->query('account_id');
         $from = $request->query('from');
         $to = $request->query('to');
-        $accounts = Account::orderBy('name')->get(['id','name','code']);
+        $accounts = Account::where('is_active',true)->orderBy('name')->get(['id','name','code']);
         $rows = collect();
         $opening = null; $account = null;
         if ($accountId) {
@@ -31,4 +31,3 @@ class CashbookPageController extends Controller
         return view('finance.cashbook.index', compact('accounts','account','rows','opening','from','to'));
     }
 }
-

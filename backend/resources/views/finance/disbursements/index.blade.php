@@ -30,7 +30,7 @@
       <th class="py-2 px-3">Kode</th>
       <th class="py-2 px-3">Program</th>
       <th class="py-2 px-3">Penerima</th>
-      <th class="py-2 px-3">Jumlah</th>
+      <th class="py-2 px-3 text-right">Jumlah</th>
       <th class="py-2 px-3">Status</th>
       <th class="py-2 px-3 w-36">Aksi</th>
     </tr></thead>
@@ -40,7 +40,7 @@
         <td class="py-2 px-3 font-mono">{{ $r->code }}</td>
         <td class="py-2 px-3">{{ $r->program->name }}</td>
         <td class="py-2 px-3">{{ $r->beneficiary->name }}</td>
-        <td class="py-2 px-3">Rp {{ number_format($r->amount,0,',','.') }}</td>
+        <td class="py-2 px-3 text-right">Rp {{ number_format($r->amount,0,',','.') }}</td>
         <td class="py-2 px-3">{{ $r->status }}</td>
         <td class="py-2 px-3">
           <a class="px-2 py-1 bg-white border rounded" href="{{ route('finance.disbursements.show',$r) }}">Detail</a>
@@ -55,4 +55,3 @@
 
 <div class="mt-4">{{ $rows->links() }}</div>
 @endsection
-

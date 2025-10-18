@@ -27,6 +27,34 @@ class DatabaseSeeder extends Seeder
             ]
         );
         $admin->assignRole('admin');
+        //bendahara
+        $bendahara = User::firstOrCreate(
+            ['email' => 'bendahara@example.com'],
+            [
+                'name' => 'Bendahara',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $bendahara->assignRole('bendahara');
+        //pimpinan
+        $pimpinan = User::firstOrCreate(
+            ['email' => 'pimpinan@example.com'],
+            [
+                'name' => 'Pimpinan',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $pimpinan->assignRole('pimpinan');
+        //unit
+        $unit = User::firstOrCreate(
+            ['email' => 'unit@example.com'],
+            [
+                'name' => 'Unit',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $unit->assignRole('unit');
+        
 
         // Demo data
         $this->call([

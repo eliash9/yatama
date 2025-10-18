@@ -25,7 +25,7 @@
         <th class="py-2 px-3">Keterangan</th>
         <th class="py-2 px-3">Kanal</th>
         <th class="py-2 px-3">Ref</th>
-        <th class="py-2 px-3">Jumlah</th>
+        <th class="py-2 px-3 text-right">Jumlah</th>
         <th class="py-2 px-3">Income</th>
         <th class="py-2 px-3">Transaksi</th>
         <th class="py-2 px-3 w-[28rem]">Manual Match</th>
@@ -38,7 +38,7 @@
         <td class="py-2 px-3">{{ $m->description }}</td>
         <td class="py-2 px-3 uppercase">{{ $m->channel }}</td>
         <td class="py-2 px-3">{{ $m->ref_no }}</td>
-        <td class="py-2 px-3">Rp {{ number_format($m->amount,0,',','.') }}</td>
+        <td class="py-2 px-3 text-right">Rp {{ number_format($m->amount,0,',','.') }}</td>
         <td class="py-2 px-3">
           @if($m->income)
             <span class="font-mono">{{ $m->income->receipt_no }}</span>

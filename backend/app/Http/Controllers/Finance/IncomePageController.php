@@ -7,11 +7,13 @@ use App\Models\Income;
 use App\Models\Donor;
 use App\Models\Program;
 use App\Models\Lampiran;
+use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class IncomePageController extends Controller
 {
+    use IncomeCashJournalHelper;
     public function index(Request $request)
     {
         $q = Income::query()->with(['donor','program']);
@@ -80,6 +82,11 @@ class IncomePageController extends Controller
             ]);
         }
 
+        // Auto-journal untuk kanal tunai (langsung masuk buku kas)
+        if ($income->channel === 'tunai') {
+            $this->autoJournalCashIncome($income);
+        }
+
         return redirect()->route('finance.incomes.index')->with('status','Penerimaan dicatat');
     }
 
@@ -129,6 +136,11 @@ class IncomePageController extends Controller
                 'uploader_id' => $request->user()->id,
             ]);
         }
+        // Sinkronisasi jurnal untuk kanal tunai (buat jika belum ada, atau perbarui nilai/tanggal)
+        if ($income->channel === 'tunai') {
+            $this->autoJournalCashIncome($income, true);
+        }
+
         return redirect()->route('finance.incomes.index')->with('status','Penerimaan diubah');
     }
 
@@ -136,5 +148,50 @@ class IncomePageController extends Controller
     {
         $income->delete();
         return redirect()->route('finance.incomes.index')->with('status','Penerimaan dihapus');
+    }
+}
+
+// Helper untuk pencatatan kas tunai
+namespace App\Http\Controllers\Finance;
+
+trait IncomeCashJournalHelper
+{
+    private function autoJournalCashIncome(\App\Models\Income $income, bool $allowUpdate = false): void
+    {
+        $existing = \App\Models\Transaksi::where('ref_type','income')->where('ref_id',$income->id)->first();
+        if ($existing) {
+            if ($allowUpdate) {
+                $existing->update([
+                    'tanggal' => $income->tanggal,
+                    'amount' => $income->amount,
+                    'program_id' => $income->program_id,
+                    'reconciled_at' => $existing->reconciled_at ?: now(),
+                ]);
+            }
+            return;
+        }
+        $acc = $this->pickCashAccount();
+        \App\Models\Transaksi::create([
+            'tanggal' => $income->tanggal,
+            'jenis' => 'debit',
+            'akun_kas' => $acc?->code ?? 'CASH',
+            'account_id' => $acc?->id,
+            'amount' => $income->amount,
+            'ref_type' => 'income',
+            'ref_id' => $income->id,
+            'program_id' => $income->program_id,
+            'memo' => 'Penerimaan tunai '.$income->receipt_no,
+            'reconciled_at' => now(),
+        ]);
+    }
+
+    private function pickCashAccount(): ?\App\Models\Account
+    {
+        $code = env('INCOME_CASH_ACCOUNT_CODE', '1.1.1'); // Kas Tunai default
+        $acc = \App\Models\Account::where('code',$code)->where('is_active',true)->first();
+        if ($acc) return $acc;
+        $acc = \App\Models\Account::where('is_active',true)->where('type','cash')->orderBy('id')->first();
+        if ($acc) return $acc;
+        return \App\Models\Account::where('is_active',true)->orderBy('id')->first();
     }
 }

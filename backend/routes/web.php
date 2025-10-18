@@ -48,7 +48,19 @@ Route::prefix('finance')->name('finance.')->middleware(['auth','role:admin|benda
     Route::post('mutations/{mutation}/match', [BankMutationPageController::class,'match'])->name('mutations.match');
     Route::resource('transactions', TransactionPageController::class)->only(['index','create','store','destroy'])->middleware(['role:admin|bendahara']);
     Route::get('cashbook', CashbookPageController::class)->name('cashbook');
+    Route::resource('disbursements', DisbursementPageController::class);
+    Route::post('disbursements/{disbursement}/submit', [DisbursementPageController::class,'submit'])->name('disbursements.submit')->middleware(['role:unit|admin|bendahara|pimpinan']);
+    Route::post('disbursements/{disbursement}/assess', [DisbursementPageController::class,'assess'])->name('disbursements.assess')->middleware(['role:unit|admin|bendahara|pimpinan']);
+    Route::post('disbursements/{disbursement}/verify-program', [DisbursementPageController::class,'verifyProgram'])->name('disbursements.verify_program')->middleware(['role:admin|pimpinan']);
+    Route::post('disbursements/{disbursement}/verify-finance', [DisbursementPageController::class,'verifyFinance'])->name('disbursements.verify_finance')->middleware(['role:admin|bendahara']);
+    Route::post('disbursements/{disbursement}/approve', [DisbursementPageController::class,'approve'])->name('disbursements.approve')->middleware(['role:admin|pimpinan']);
+    Route::post('disbursements/{disbursement}/pay', [DisbursementPageController::class,'pay'])->name('disbursements.pay')->middleware(['role:admin|bendahara']);
+});
+
+// Reports (read-only for unit & others)
+Route::prefix('finance')->name('finance.')->middleware(['auth','role:admin|bendahara|pimpinan|unit'])->group(function(){
     Route::get('reports/balances', [ReportPageController::class,'balances'])->name('reports.balances');
+    Route::get('reports/balance-sheet', [ReportPageController::class,'balanceSheet'])->name('reports.balance_sheet');
     Route::get('reports/balances.xlsx', [ReportPageController::class,'balancesExcel'])->name('reports.balances.xlsx');
     Route::get('reports/balances.pdf', [ReportPageController::class,'balancesPdf'])->name('reports.balances.pdf');
     Route::get('reports/incomes', [ReportPageController::class,'incomes'])->name('reports.incomes');
@@ -64,6 +76,7 @@ Route::prefix('finance')->name('finance.')->middleware(['auth','role:admin|benda
     Route::get('reports/cashflow.xlsx', [ReportPageController::class,'cashflowExcel'])->name('reports.cashflow.xlsx');
     Route::get('reports/cashflow.pdf', [ReportPageController::class,'cashflowPdf'])->name('reports.cashflow.pdf');
     Route::get('reports/funds', [ReportPageController::class,'funds'])->name('reports.funds');
+    Route::get('reports/activity', [ReportPageController::class,'activity'])->name('reports.activity');
     Route::get('reports/funds.xlsx', [ReportPageController::class,'fundsExcel'])->name('reports.funds.xlsx');
     Route::get('reports/funds.pdf', [ReportPageController::class,'fundsPdf'])->name('reports.funds.pdf');
     Route::get('reports/campaigns', [ReportPageController::class,'campaigns'])->name('reports.campaigns');
@@ -72,13 +85,9 @@ Route::prefix('finance')->name('finance.')->middleware(['auth','role:admin|benda
     Route::get('reports/operational-ratio', [ReportPageController::class,'operationalRatio'])->name('reports.operational_ratio');
     Route::get('reports/operational-ratio.xlsx', [ReportPageController::class,'operationalRatioExcel'])->name('reports.operational_ratio.xlsx');
     Route::get('reports/operational-ratio.pdf', [ReportPageController::class,'operationalRatioPdf'])->name('reports.operational_ratio.pdf');
-    Route::resource('disbursements', DisbursementPageController::class);
-    Route::post('disbursements/{disbursement}/submit', [DisbursementPageController::class,'submit'])->name('disbursements.submit')->middleware(['role:unit|admin|bendahara|pimpinan']);
-    Route::post('disbursements/{disbursement}/assess', [DisbursementPageController::class,'assess'])->name('disbursements.assess')->middleware(['role:unit|admin|bendahara|pimpinan']);
-    Route::post('disbursements/{disbursement}/verify-program', [DisbursementPageController::class,'verifyProgram'])->name('disbursements.verify_program')->middleware(['role:admin|pimpinan']);
-    Route::post('disbursements/{disbursement}/verify-finance', [DisbursementPageController::class,'verifyFinance'])->name('disbursements.verify_finance')->middleware(['role:admin|bendahara']);
-    Route::post('disbursements/{disbursement}/approve', [DisbursementPageController::class,'approve'])->name('disbursements.approve')->middleware(['role:admin|pimpinan']);
-    Route::post('disbursements/{disbursement}/pay', [DisbursementPageController::class,'pay'])->name('disbursements.pay')->middleware(['role:admin|bendahara']);
+    Route::get('reports/budget-realization', [ReportPageController::class,'budgetRealization'])->name('reports.budget_realization');
+    Route::get('reports/budget-realization.xlsx', [ReportPageController::class,'budgetRealizationExcel'])->name('reports.budget_realization.xlsx');
+    Route::get('reports/budget-realization.pdf', [ReportPageController::class,'budgetRealizationPdf'])->name('reports.budget_realization.pdf');
 });
 
 // Admin-only util
@@ -94,4 +103,36 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:admin'])->group
     Route::get('roles', [AdminRoleController::class,'index'])->name('roles.index');
     Route::post('roles/permissions', [AdminRoleController::class,'storePermission'])->name('roles.permissions.store');
     Route::put('roles/{role}/permissions', [AdminRoleController::class,'updateRolePermissions'])->name('roles.permissions.update');
+});
+// Public donation pages (optional subdomain)
+Route::group([], function(){
+    Route::get('/donasi', [\App\Http\Controllers\DonationController::class,'index'])->name('public.donation.index');
+    Route::get('/program/{program}', [\App\Http\Controllers\DonationController::class,'program'])->name('public.donation.program');
+    Route::post('/donasi/checkout', [\App\Http\Controllers\DonationController::class,'checkout'])->name('public.donation.checkout');
+    Route::get('/donasi/status', [\App\Http\Controllers\DonationController::class,'status'])->name('public.donation.status');
+    Route::get('/donasi/thanks', [\App\Http\Controllers\DonationController::class,'thanks'])->name('public.donation.thanks');
+});
+
+if ($domain = env('DONATION_DOMAIN')) {
+    Route::domain($domain)->group(function(){
+        Route::get('/', [\App\Http\Controllers\DonationController::class,'index'])->name('public.donation.index');
+        Route::get('/program/{program}', [\App\Http\Controllers\DonationController::class,'program'])->name('public.donation.program');
+        Route::post('/checkout', [\App\Http\Controllers\DonationController::class,'checkout'])->name('public.donation.checkout');
+        Route::get('/status', [\App\Http\Controllers\DonationController::class,'status'])->name('public.donation.status');
+        Route::get('/thanks', [\App\Http\Controllers\DonationController::class,'thanks'])->name('public.donation.thanks');
+    });
+}
+
+// Donor portal (public donor auth)
+Route::prefix('donor')->name('public.donor.')->group(function(){
+    Route::get('login', [\App\Http\Controllers\DonorAuthController::class,'showLogin'])->name('login');
+    Route::post('request-code', [\App\Http\Controllers\DonorAuthController::class,'requestCode'])->name('request');
+    Route::get('verify', [\App\Http\Controllers\DonorAuthController::class,'showVerify'])->name('verify');
+    Route::post('verify', [\App\Http\Controllers\DonorAuthController::class,'verify'])->name('verify.post');
+    Route::post('logout', [\App\Http\Controllers\DonorAuthController::class,'logout'])->name('logout');
+
+    Route::get('dashboard', [\App\Http\Controllers\DonorPortalController::class,'dashboard'])->name('dashboard');
+    Route::get('donations', [\App\Http\Controllers\DonorPortalController::class,'donations'])->name('donations');
+    Route::post('donations/claim', [\App\Http\Controllers\DonorPortalController::class,'claim'])->name('donations.claim');
+    Route::get('reports', [\App\Http\Controllers\DonorPortalController::class,'reports'])->name('reports');
 });

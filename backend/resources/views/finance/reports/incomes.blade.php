@@ -21,7 +21,7 @@
     <table class="min-w-full text-sm">
       <tbody>
         @forelse($byChannel as $ch=>$tot)
-          <tr class="border-t"><td class="py-2 pr-4 uppercase">{{ $ch }}</td><td class="py-2 pr-4">Rp {{ number_format($tot,0,',','.') }}</td></tr>
+          <tr class="border-t"><td class="py-2 pr-4 uppercase">{{ $ch }}</td><td class="py-2 pr-4 text-right">Rp {{ number_format($tot,0,',','.') }}</td></tr>
         @empty
           <tr><td class="py-4 text-gray-500">Tidak ada data</td></tr>
         @endforelse
@@ -34,7 +34,7 @@
       <tbody>
         @forelse($byProgram as $row)
           @php $name = $row->pid ? ($programNames[$row->pid] ?? 'Program #'.$row->pid) : 'General Fund'; @endphp
-          <tr class="border-t"><td class="py-2 pr-4">{{ $name }}</td><td class="py-2 pr-4">Rp {{ number_format($row->total,0,',','.') }}</td></tr>
+          <tr class="border-t"><td class="py-2 pr-4">{{ $name }}</td><td class="py-2 pr-4 text-right">Rp {{ number_format($row->total,0,',','.') }}</td></tr>
         @empty
           <tr><td class="py-4 text-gray-500">Tidak ada data</td></tr>
         @endforelse

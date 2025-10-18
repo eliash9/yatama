@@ -40,11 +40,20 @@ class ProgramPageController extends Controller
             'type' => 'nullable|in:program,campaign',
             'unit_id' => 'nullable|exists:units,id',
             'description' => 'nullable|string',
+            'banner' => 'nullable|image|max:4096,ratio=3/1',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'target_amount' => 'nullable|integer|min:0',
             'status' => 'nullable|string',
         ]);
+        if ($request->hasFile('banner')) {
+            $file = $request->file('banner');
+            $filename = 'program-'.\Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(10)).'.jpg';
+            $path = 'program-banners/'.$filename;
+            $this->processBannerToJpeg($file->getPathname(), 1200, 400, 80, \Illuminate\Support\Facades\Storage::disk('public')->path($path));
+            $data['banner_url'] = 'storage/'.$path;
+        }
+        unset($data['banner']);
         Program::create($data);
         return redirect()->route('master.programs.index')->with('status','Program/Kampanye dibuat');
     }
@@ -65,11 +74,20 @@ class ProgramPageController extends Controller
             'type' => 'nullable|in:program,campaign',
             'unit_id' => 'nullable|exists:units,id',
             'description' => 'nullable|string',
+            'banner' => 'nullable|image|max:4096,ratio=3/1',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'target_amount' => 'nullable|integer|min:0',
             'status' => 'nullable|string',
         ]);
+        if ($request->hasFile('banner')) {
+            $file = $request->file('banner');
+            $filename = 'program-'.\Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(10)).'.jpg';
+            $path = 'program-banners/'.$filename;
+            $this->processBannerToJpeg($file->getPathname(), 1200, 400, 80, \Illuminate\Support\Facades\Storage::disk('public')->path($path));
+            $data['banner_url'] = 'storage/'.$path;
+        }
+        unset($data['banner']);
         $program->update($data);
         return redirect()->route('master.programs.index')->with('status','Program/Kampanye diubah');
     }
@@ -79,5 +97,24 @@ class ProgramPageController extends Controller
         $program->delete();
         return redirect()->route('master.programs.index')->with('status','Program/Kampanye dihapus');
     }
-}
 
+    private function processBannerToJpeg(string $srcPath, int $targetW, int $targetH, int $quality, string $destPath): void
+    {
+        $info = @getimagesize($srcPath);
+        if (!$info) { return; }
+        $mime = $info['mime'] ?? '';
+        $srcImg = null;
+        if ($mime === 'image/jpeg') { $srcImg = @imagecreatefromjpeg($srcPath); }
+        elseif ($mime === 'image/png') { $srcImg = @imagecreatefrompng($srcPath); }
+        elseif ($mime === 'image/webp' && function_exists('imagecreatefromwebp')) { $srcImg = @imagecreatefromwebp($srcPath); }
+        if (!$srcImg) { return; }
+        $srcW = imagesx($srcImg); $srcH = imagesy($srcImg);
+        $targetRatio = $targetW / max(1,$targetH); $srcRatio = $srcW / max(1,$srcH);
+        if ($srcRatio > $targetRatio) { $newW = (int)($srcH * $targetRatio); $newH = $srcH; $srcX = (int)(($srcW - $newW)/2); $srcY = 0; }
+        else { $newW = $srcW; $newH = (int)($srcW / $targetRatio); $srcX = 0; $srcY = (int)(($srcH - $newH)/2); }
+        $dst = imagecreatetruecolor($targetW, $targetH);
+        imagecopyresampled($dst, $srcImg, 0, 0, $srcX, $srcY, $targetW, $targetH, $newW, $newH);
+        @imagejpeg($dst, $destPath, $quality);
+        imagedestroy($dst); imagedestroy($srcImg);
+    }
+}

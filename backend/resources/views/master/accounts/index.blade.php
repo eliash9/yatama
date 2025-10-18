@@ -25,7 +25,7 @@
       <th class="py-2 px-3">Nama</th>
       <th class="py-2 px-3">Tipe</th>
       <th class="py-2 px-3">Bank / No Rek</th>
-      <th class="py-2 px-3">Saldo Awal</th>
+      <th class="py-2 px-3 text-right">Saldo Awal</th>
       <th class="py-2 px-3">Status</th>
       <th class="py-2 px-3 w-40">Aksi</th>
     </tr></thead>
@@ -36,7 +36,7 @@
         <td class="py-2 px-3">{{ $r->name }}</td>
         <td class="py-2 px-3 capitalize">{{ $r->type }}</td>
         <td class="py-2 px-3">{{ $r->bank_name }} {{ $r->account_no }}</td>
-        <td class="py-2 px-3">Rp {{ number_format($r->opening_balance,0,',','.') }}</td>
+        <td class="py-2 px-3 text-right">Rp {{ number_format($r->opening_balance,0,',','.') }}</td>
         <td class="py-2 px-3">{!! $r->is_active ? '<span class="text-green-600">Aktif</span>' : '<span class="text-gray-500">Nonaktif</span>' !!}</td>
         <td class="py-2 px-3">
           <div class="flex gap-2">
@@ -57,4 +57,3 @@
 
 <div class="mt-4">{{ $rows->links() }}</div>
 @endsection
-

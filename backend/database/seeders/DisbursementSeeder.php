@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Disbursement;
 use App\Models\DisbursementPayment;
+use App\Models\Transaksi;
 use App\Models\Program;
 use App\Models\Beneficiary;
 use App\Models\Account;
@@ -17,7 +18,7 @@ class DisbursementSeeder extends Seeder
         $faker = Faker::create('id_ID');
         $programIds = Program::pluck('id')->all();
         $benefIds = Beneficiary::pluck('id')->all();
-        $account = Account::first();
+        $account = Account::where('is_active',true)->orderBy('id')->first();
 
         for ($i=0; $i<30; $i++) {
             $code = 'DSB-'.date('Y').'-'.str_pad((string)$i,4,'0',STR_PAD_LEFT);
@@ -37,7 +38,7 @@ class DisbursementSeeder extends Seeder
             );
 
             if ($row->status === 'paid' && !$row->payments()->exists()) {
-                DisbursementPayment::create([
+                $payment = DisbursementPayment::create([
                     'disbursement_id'=>$row->id,
                     'channel'=>'transfer',
                     'account_id'=>$account?->id,
@@ -47,6 +48,21 @@ class DisbursementSeeder extends Seeder
                     'bank_name'=>'BCA','account_no'=>'1234567890','ref_no'=>'REF'.$i,
                     'created_by'=>1,
                 ]);
+
+                // Create matching transaksi kredit for the payment (idempotent)
+                $akun = $payment->account_id ? Account::find($payment->account_id) : null;
+                Transaksi::updateOrCreate(
+                    ['ref_type'=>'disbursement','ref_id'=>$row->id],
+                    [
+                        'tanggal'=>($payment->paid_at ?? now())->format('Y-m-d'),
+                        'jenis'=>'kredit',
+                        'akun_kas'=>$akun?->code ?? ($payment->channel==='cash'?'CASH':'BANK'),
+                        'account_id'=>$akun?->id,
+                        'amount'=>$payment->amount,
+                        'program_id'=>$row->program_id,
+                        'memo'=>'Disbursement '.$row->code.' to '.($payment->recipient_name ?? 'Beneficiary'),
+                    ]
+                );
             }
         }
     }

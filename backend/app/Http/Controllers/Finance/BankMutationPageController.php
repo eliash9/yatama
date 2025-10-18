@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use App\Models\BankMutation;
 use App\Models\Income;
+use App\Models\Account;
 use Illuminate\Http\Request;
 
 class BankMutationPageController extends Controller
@@ -48,19 +49,27 @@ class BankMutationPageController extends Controller
         $matched = 0;
         $mutations = BankMutation::whereNull('matched_income_id')->get();
         foreach ($mutations as $m) {
-            $candidate = Income::where('status','recorded')
-                ->where('amount', $m->amount)
-                ->whereBetween('tanggal', [date('Y-m-d', strtotime($m->tanggal.' -2 days')), date('Y-m-d', strtotime($m->tanggal.' +2 days'))])
-                ->when($m->channel, fn($q) => $q->where('channel',$m->channel))
-                ->when($m->ref_no, fn($q) => $q->orWhere('ref_no',$m->ref_no))
-                ->first();
+            $candidate = null;
+            if (!empty($m->ref_no)) {
+                $candidate = Income::where('status','recorded')->where('ref_no',$m->ref_no)->first();
+            }
+            if (!$candidate) {
+                $start = date('Y-m-d', strtotime($m->tanggal.' -2 days'));
+                $end   = date('Y-m-d', strtotime($m->tanggal.' +2 days'));
+                $q = Income::where('status','recorded')
+                    ->where('amount', $m->amount)
+                    ->whereBetween('tanggal', [$start,$end]);
+                if (!empty($m->channel)) { $q->where('channel',$m->channel); }
+                $candidate = $q->orderBy('tanggal')->first();
+            }
             if ($candidate) {
                 $m->matched_income_id = $candidate->id; $m->save();
                 $candidate->status = 'matched'; $candidate->save();
+                $this->autoJournalIncome($m, $candidate);
                 $matched++;
             }
         }
-        return back()->with('status', "Auto-match berhasil: $matched transaksi");
+        return back()->with('status', "Auto-match berhasil: $matched baris");
     }
 
     public function match(Request $request, BankMutation $mutation)
@@ -84,7 +93,8 @@ class BankMutationPageController extends Controller
                 }
                 $mutation->matched_income_id = $income->id; $mutation->save();
                 $income->status = 'matched'; $income->save();
-                return back()->with('status','Mutasi → Income berhasil dihubungkan');
+                $this->autoJournalIncome($mutation, $income);
+                return back()->with('status','Mutasi -> Income berhasil dihubungkan');
             }
             return back()->withErrors(['mutation' => 'Mutasi sudah terhubung ke income']);
         } else {
@@ -93,9 +103,51 @@ class BankMutationPageController extends Controller
                 if (!$trx) return back()->withErrors(['transaction_id' => 'Transaksi tidak ditemukan']);
                 $mutation->matched_transaction_id = $trx->id; $mutation->save();
                 $trx->reconciled_at = now(); $trx->save();
-                return back()->with('status','Mutasi → Transaksi berhasil dihubungkan');
+                return back()->with('status','Mutasi -> Transaksi berhasil dihubungkan');
             }
             return back()->withErrors(['mutation' => 'Mutasi sudah terhubung ke transaksi']);
         }
     }
+
+    private function autoJournalIncome(BankMutation $m, Income $income): void
+    {
+        $existing = \App\Models\Transaksi::where('ref_type','income')->where('ref_id',$income->id)->first();
+        if ($existing) {
+            if (!$m->matched_transaction_id) { $m->matched_transaction_id = $existing->id; $m->save(); }
+            return;
+        }
+        $acc = $this->pickAccountForChannel($m->channel);
+        $trx = \App\Models\Transaksi::create([
+            'tanggal' => $m->tanggal,
+            'jenis' => 'debit',
+            'akun_kas' => $acc?->code ?? 'BANK',
+            'account_id' => $acc?->id,
+            'amount' => $m->amount,
+            'ref_type' => 'income',
+            'ref_id' => $income->id,
+            'program_id' => $income->program_id,
+            'memo' => 'Auto journal '.$income->receipt_no.' via '.($m->channel ?: 'bank'),
+            'reconciled_at' => now(),
+        ]);
+        $m->matched_transaction_id = $trx->id; $m->save();
+    }
+
+    private function pickAccountForChannel(?string $channel): ?Account
+    {
+        $map = [
+            'qris' => env('MUTATION_ACCOUNT_QRIS_CODE'),
+            'va' => env('MUTATION_ACCOUNT_VA_CODE'),
+            'transfer' => env('MUTATION_ACCOUNT_TRANSFER_CODE'),
+        ];
+        $c = strtolower((string)$channel);
+        $code = $map[$c] ?? env('MUTATION_ACCOUNT_DEFAULT_CODE');
+        if ($code) {
+            $acc = Account::where('code',$code)->where('is_active',true)->first();
+            if ($acc) return $acc;
+        }
+        $acc = Account::where('is_active',true)->where('code','like','1.1.2.%')->orderBy('id')->first();
+        if ($acc) return $acc;
+        return Account::where('is_active',true)->orderBy('id')->first();
+    }
 }
+

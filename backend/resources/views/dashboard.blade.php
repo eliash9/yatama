@@ -73,7 +73,12 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
   <div class="bg-white rounded-lg shadow p-4">
     <div class="font-medium mb-2">Distribusi Status Pengajuan</div>
-    <canvas id="statusChart" height="120"></canvas>
+    @php $sumCounts = array_sum(array_values($counts ?? [])); @endphp
+    @if($sumCounts <= 0)
+      <div class="text-sm text-gray-500">Belum ada data pengajuan untuk ditampilkan.</div>
+    @else
+      <canvas id="statusChart" height="120"></canvas>
+    @endif
   </div>
   <div class="bg-white rounded-lg shadow p-4">
     <div class="font-medium mb-2">Arus Kas</div>
@@ -86,13 +91,13 @@
   <div class="bg-white rounded-lg shadow p-4">
     <div class="font-medium mb-2">Top Program (Pemasukan)</div>
     <table class="min-w-full text-sm">
-      <thead><tr class="text-left text-gray-500"><th class="py-1 pr-4">Program</th><th class="py-1 pr-4">Total</th></tr></thead>
+      <thead><tr class="text-left text-gray-500"><th class="py-1 pr-4">Program</th><th class="py-1 pr-4 text-right">Total</th></tr></thead>
       <tbody>
       @forelse($incomeByProgram as $ip)
         @php $name = $ip->pid ? ($programNames[$ip->pid] ?? 'Program #'.$ip->pid) : 'General Fund'; @endphp
         <tr class="border-t">
           <td class="py-2 pr-4">{{ $name }}</td>
-          <td class="py-2 pr-4">Rp {{ number_format($ip->total,0,',','.') }}</td>
+          <td class="py-2 pr-4 text-right">Rp {{ number_format($ip->total,0,',','.') }}</td>
         </tr>
       @empty
         <tr><td colspan="2" class="py-4 text-gray-500">Belum ada pemasukan</td></tr>
@@ -102,17 +107,20 @@
   </div>
   <script>
     const counts = @json($counts);
+    const sumCounts = Object.values(counts || {}).reduce((a,b)=>a+Number(b||0),0);
     const labels = ['draft','diajukan','ditinjau','disetujui','ditolak','dicairkan','selesai'];
     const dataCounts = labels.map(l => counts[l] ?? 0);
-    const ctx1 = document.getElementById('statusChart');
-    new Chart(ctx1, {
-      type: 'doughnut',
-      data: {
-        labels,
-        datasets: [{ data: dataCounts, backgroundColor: ['#94a3b8','#60a5fa','#fbbf24','#22c55e','#ef4444','#14b8a6','#6366f1'] }]
-      },
-      options: { plugins: { legend: { position: 'bottom' } } }
-    });
+    if (sumCounts > 0) {
+      const ctx1 = document.getElementById('statusChart');
+      new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{ data: dataCounts, backgroundColor: ['#94a3b8','#60a5fa','#fbbf24','#22c55e','#ef4444','#14b8a6','#6366f1'] }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+      });
+    }
 
     const ctx2 = document.getElementById('cashChart');
     new Chart(ctx2, {
@@ -145,7 +153,7 @@
           <th class="py-2 pr-4">Kode</th>
           <th class="py-2 pr-4">Judul</th>
           <th class="py-2 pr-4">Status</th>
-          <th class="py-2 pr-4">Total</th>
+          <th class="py-2 pr-4 text-right">Total</th>
           <th class="py-2 pr-4">Tanggal</th>
         </tr>
       </thead>
@@ -155,7 +163,7 @@
           <td class="py-2 pr-4 font-medium">{{ $r->kode }}</td>
           <td class="py-2 pr-4">{{ $r->judul }}</td>
           <td class="py-2 pr-4 capitalize">{{ $r->status }}</td>
-          <td class="py-2 pr-4">Rp {{ number_format($r->total_diminta,0,',','.') }}</td>
+          <td class="py-2 pr-4 text-right">Rp {{ number_format($r->total_diminta,0,',','.') }}</td>
           <td class="py-2 pr-4">{{ $r->created_at->format('d M Y') }}</td>
         </tr>
         @empty

@@ -41,6 +41,14 @@
         @endforeach
       </select>
     </div>
+    <div>
+      <label class="block text-sm font-medium">Kategori</label>
+      <label class="inline-flex items-center gap-2 text-sm mt-2">
+        <input type="checkbox" name="category" value="operational" @checked(old('category',$row->category)==='operational') />
+        <span>Beban Operasional</span>
+      </label>
+      <div class="text-xs text-gray-500 mt-1">Centang untuk menandai pengeluaran operasional (muncul di laporan Rasio Operasional).</div>
+    </div>
     <div class="md:col-span-2">
       <label class="block text-sm font-medium">Memo</label>
       <input name="memo" value="{{ old('memo',$row->memo) }}" class="w-full border rounded px-3 py-2" />

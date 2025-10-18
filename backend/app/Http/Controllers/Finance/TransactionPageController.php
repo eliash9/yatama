@@ -35,6 +35,7 @@ class TransactionPageController extends Controller
             'account_id' => 'required|exists:accounts,id',
             'amount' => 'required|integer|min:0',
             'program_id' => 'nullable|exists:programs,id',
+            'category' => 'nullable|in:operational',
             'memo' => 'nullable|string',
         ]);
         $acc = \App\Models\Account::find($data['account_id']);

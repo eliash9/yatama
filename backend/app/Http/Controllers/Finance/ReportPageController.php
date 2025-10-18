@@ -17,9 +17,61 @@ use App\Exports\BalancesExport;
 use App\Exports\FundsExport;
 use App\Exports\CampaignsExport;
 use App\Exports\OperationalRatioExport;
+use App\Exports\BudgetRealizationExport;
 
 class ReportPageController extends Controller
 {
+    public function balanceSheet(Request $request)
+    {
+        $asOf = $request->query('as_of');
+        $accounts = Account::orderBy('code')->get();
+        $balances = [];
+        foreach ($accounts as $a) {
+            $q = Transaksi::where('account_id',$a->id);
+            if ($asOf) { $q->where('tanggal','<=',$asOf); }
+            $net = (int) $q->select(DB::raw("COALESCE(SUM(CASE WHEN jenis='debit' THEN amount ELSE -amount END),0) as net"))->value('net');
+            $balances[$a->id] = (int)$a->opening_balance + $net;
+        }
+        $sumByPrefix = function(string $prefix) use ($accounts,$balances) {
+            $total = 0;
+            foreach ($accounts as $a) {
+                $code = (string)$a->code;
+                if ($code === $prefix || str_starts_with($code, $prefix.'.')) {
+                    $total += (int)($balances[$a->id] ?? 0);
+                }
+            }
+            return $total;
+        };
+        $assets = $sumByPrefix('1');
+        $liabilities = $sumByPrefix('2');
+        $equity = $sumByPrefix('3');
+        // Kas & Bank sebagai rincian cepat
+        $cashBank = $accounts->filter(fn($a)=>in_array($a->type,['cash','bank']))
+            ->sum(fn($a)=> (int)($balances[$a->id] ?? 0));
+        return view('finance.reports.balance_sheet', [
+            'asOf'=>$asOf,
+            'assets'=>$assets,
+            'liabilities'=>$liabilities,
+            'equity'=>$equity,
+            'cashBank'=>$cashBank,
+        ]);
+    }
+
+    public function activity(Request $request)
+    {
+        $from = $request->query('from'); $to = $request->query('to');
+        $inc = Income::query(); if ($from) $inc->where('tanggal','>=',$from); if ($to) $inc->where('tanggal','<=',$to);
+        $donations = (int) $inc->sum('amount');
+        // Penggunaan: program vs operasional
+        $trx = Transaksi::where('jenis','kredit');
+        if ($from) $trx->where('tanggal','>=',$from); if ($to) $trx->where('tanggal','<=',$to);
+        $programSpend = (int) (clone $trx)->whereNotNull('program_id')->sum('amount');
+        $operationalSpend = (int) (clone $trx)->where('category','operational')->sum('amount');
+        $totalSources = $donations; // usaha/hibah belum ditrack → 0
+        $totalUses = $programSpend + $operationalSpend;
+        $netChange = $totalSources - $totalUses;
+        return view('finance.reports.activity', compact('from','to','donations','programSpend','operationalSpend','totalSources','totalUses','netChange'));
+    }
     public function balances(Request $request)
     {
         // Saldo per Akun
@@ -186,7 +238,18 @@ class ReportPageController extends Controller
     {
         $from = $request->query('from'); $to = $request->query('to');
         $series = $this->cashflowSeries($from, $to);
-        return view('finance.reports.cashflow', compact('from','to','series'));
+        // Klasifikasi (kas operasi; investasi/pendanaan belum ditrack → 0)
+        $q = Transaksi::query(); if ($from) $q->where('tanggal','>=',$from); if ($to) $q->where('tanggal','<=',$to);
+        $operatingIn = (int) (clone $q)->where('jenis','debit')->sum('amount');
+        $operatingOut = (int) (clone $q)->where('jenis','kredit')->sum('amount');
+        $classification = [
+            'operating_in'=>$operatingIn,
+            'operating_out'=>$operatingOut,
+            'operating_net'=>$operatingIn - $operatingOut,
+            'investing_net'=>0,
+            'financing_net'=>0,
+        ];
+        return view('finance.reports.cashflow', compact('from','to','series','classification'));
     }
 
     public function cashflowCsv(Request $request)
@@ -322,6 +385,83 @@ class ReportPageController extends Controller
             ->when($to, fn($q)=>$q->where('tanggal','<=',$to))
             ->where('jenis','kredit')->whereNotNull('program_id')->sum('amount');
         return view('finance.reports.operational_ratio', compact('from','to','ops','programSpend'));
+    }
+
+    public function budgetRealization(Request $request)
+    {
+        $unitId = $request->query('unit_id');
+        $periodeId = $request->query('periode_id');
+        $units = \App\Models\Unit::orderBy('name')->get(['id','name']);
+        $periodes = \App\Models\Periode::orderByDesc('start_date')->get(['id','name']);
+
+        $paguByAcc = collect();
+        $realByAcc = collect();
+        if ($unitId && $periodeId) {
+            $anggaran = \App\Models\Anggaran::with('items')->where('unit_id',$unitId)->where('periode_id',$periodeId)->first();
+            if ($anggaran) {
+                $paguByAcc = $anggaran->items->groupBy('account_code')->map(fn($g)=> (int) $g->sum('pagu'));
+            }
+            $approvedStatuses = ['disetujui','dicairkan','selesai'];
+            $realByAcc = \App\Models\PengajuanItem::select('pengajuan_items.account_code', DB::raw('SUM(pengajuan_items.subtotal) as total'))
+                ->join('pengajuans','pengajuans.id','=','pengajuan_items.pengajuan_id')
+                ->where('pengajuans.unit_id',$unitId)
+                ->where('pengajuans.periode_id',$periodeId)
+                ->whereIn('pengajuans.status',$approvedStatuses)
+                ->groupBy('pengajuan_items.account_code')
+                ->pluck('total','account_code');
+        }
+
+        $codes = $paguByAcc->keys()->merge(collect($realByAcc)->keys())->unique()->sort();
+        $rows = [];
+        foreach ($codes as $code) {
+            $pagu = (int) ($paguByAcc[$code] ?? 0);
+            $real = (int) ($realByAcc[$code] ?? 0);
+            $rows[] = ['account_code'=>$code,'pagu'=>$pagu,'realisasi'=>$real,'sisa'=>max(0,$pagu-$real)];
+        }
+
+        return view('finance.reports.budget_realization', [
+            'units'=>$units, 'periodes'=>$periodes,
+            'unitId'=>$unitId, 'periodeId'=>$periodeId,
+            'rows'=>$rows,
+        ]);
+    }
+
+    public function budgetRealizationExcel(Request $request)
+    {
+        $unitId = $request->query('unit_id'); $periodeId = $request->query('periode_id');
+        return new BudgetRealizationExport($unitId, $periodeId);
+    }
+
+    public function budgetRealizationPdf(Request $request)
+    {
+        $unitId = $request->query('unit_id'); $periodeId = $request->query('periode_id');
+        $units = \App\Models\Unit::orderBy('name')->get(['id','name']);
+        $periodes = \App\Models\Periode::orderByDesc('start_date')->get(['id','name']);
+
+        $paguByAcc = collect(); $realByAcc = collect();
+        if ($unitId && $periodeId) {
+            $anggaran = \App\Models\Anggaran::with('items')->where('unit_id',$unitId)->where('periode_id',$periodeId)->first();
+            if ($anggaran) { $paguByAcc = $anggaran->items->groupBy('account_code')->map(fn($g)=> (int) $g->sum('pagu')); }
+            $approvedStatuses = ['disetujui','dicairkan','selesai'];
+            $realByAcc = \App\Models\PengajuanItem::select('pengajuan_items.account_code', DB::raw('SUM(pengajuan_items.subtotal) as total'))
+                ->join('pengajuans','pengajuans.id','=','pengajuan_items.pengajuan_id')
+                ->where('pengajuans.unit_id',$unitId)
+                ->where('pengajuans.periode_id',$periodeId)
+                ->whereIn('pengajuans.status',$approvedStatuses)
+                ->groupBy('pengajuan_items.account_code')
+                ->pluck('total','account_code');
+        }
+        $codes = $paguByAcc->keys()->merge(collect($realByAcc)->keys())->unique()->sort();
+        $rows = [];
+        foreach ($codes as $code) {
+            $pagu = (int) ($paguByAcc[$code] ?? 0);
+            $real = (int) ($realByAcc[$code] ?? 0);
+            $rows[] = ['account_code'=>$code,'pagu'=>$pagu,'realisasi'=>$real,'sisa'=>max(0,$pagu-$real)];
+        }
+        $unitName = optional($units->firstWhere('id',(int)$unitId))->name;
+        $periodeName = optional($periodes->firstWhere('id',(int)$periodeId))->name;
+        $pdf = Pdf::loadView('exports.budget_realization_pdf', compact('rows','unitName','periodeName'));
+        return $pdf->download('budget_realization_'.date('Ymd_His').'.pdf');
     }
 
     public function operationalRatioExcel(Request $request)

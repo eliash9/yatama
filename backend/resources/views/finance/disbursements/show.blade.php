@@ -96,13 +96,13 @@
       @if($row->payments->isNotEmpty())
         <div class="mt-4">
           <table class="min-w-full text-sm">
-            <thead class="text-gray-500"><tr class="text-left"><th class="py-1 pr-4">Tgl</th><th class="py-1 pr-4">Kanal</th><th class="py-1 pr-4">Jumlah</th><th class="py-1 pr-4">Ref</th><th class="py-1 pr-4">Tanda Terima</th></tr></thead>
+            <thead class="text-gray-500"><tr class="text-left"><th class="py-1 pr-4">Tgl</th><th class="py-1 pr-4">Kanal</th><th class="py-1 pr-4 text-right">Jumlah</th><th class="py-1 pr-4">Ref</th><th class="py-1 pr-4">Tanda Terima</th></tr></thead>
             <tbody>
               @foreach($row->payments as $p)
               <tr class="border-t">
                 <td class="py-1 pr-4">{{ $p->paid_at?\Carbon\Carbon::parse($p->paid_at)->format('d M Y'):'-' }}</td>
                 <td class="py-1 pr-4">{{ $p->channel }}</td>
-                <td class="py-1 pr-4">Rp {{ number_format($p->amount,0,',','.') }}</td>
+                <td class="py-1 pr-4 text-right">Rp {{ number_format($p->amount,0,',','.') }}</td>
                 <td class="py-1 pr-4">{{ $p->ref_no }}</td>
                 <td class="py-1 pr-4">@if($p->receipt_url)<a href="/{{ $p->receipt_url }}" class="text-blue-600 hover:underline" target="_blank">Lihat</a>@else - @endif</td>
               </tr>
@@ -145,4 +145,3 @@
   </div>
 </div>
 @endsection
-

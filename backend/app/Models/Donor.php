@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Donor extends Model
 {
     protected $fillable = [
-        'code','type','name','email','phone','address','tax_id','is_active'
+        'code','type','name','email','phone','address','tax_id','is_active',
+        'login_token','login_token_expires_at'
     ];
 }
-

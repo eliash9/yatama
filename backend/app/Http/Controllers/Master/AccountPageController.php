@@ -18,7 +18,8 @@ class AccountPageController extends Controller
                 $qq->where('code','like',$like)->orWhere('name','like',$like)->orWhere('account_no','like',$like);
             });
         }
-        $rows = $q->orderBy('type')->orderBy('name')->paginate(15)->withQueryString();
+        // Urut berdasarkan kode akun agar mengikuti struktur COA
+        $rows = $q->orderBy('code')->paginate(15)->withQueryString();
         return view('master.accounts.index', compact('rows'));
     }
 
@@ -60,4 +61,3 @@ class AccountPageController extends Controller
 
     public function destroy(Account $account){ $account->delete(); return redirect()->route('master.accounts.index')->with('status','Akun dihapus'); }
 }
-

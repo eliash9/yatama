@@ -26,7 +26,7 @@
       <th class="py-2 px-3">Tanggal</th>
       <th class="py-2 px-3">Jenis</th>
       <th class="py-2 px-3">Akun</th>
-      <th class="py-2 px-3">Jumlah</th>
+      <th class="py-2 px-3 text-right">Jumlah</th>
       <th class="py-2 px-3">Memo</th>
       <th class="py-2 px-3 w-32">Aksi</th>
     </tr></thead>
@@ -36,7 +36,7 @@
         <td class="py-2 px-3">{{ \Carbon\Carbon::parse($r->tanggal)->format('d M Y') }}</td>
         <td class="py-2 px-3 capitalize">{{ $r->jenis }}</td>
         <td class="py-2 px-3">{{ $r->akun_kas }}</td>
-        <td class="py-2 px-3">Rp {{ number_format($r->amount,0,',','.') }}</td>
+        <td class="py-2 px-3 text-right">Rp {{ number_format($r->amount,0,',','.') }}</td>
         <td class="py-2 px-3">{{ $r->memo }}</td>
         <td class="py-2 px-3">
           <form method="POST" action="{{ route('finance.transactions.destroy',$r) }}" onsubmit="return confirm('Hapus transaksi?')">
@@ -54,4 +54,3 @@
 
 <div class="mt-4">{{ $rows->links() }}</div>
 @endsection
-

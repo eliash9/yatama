@@ -28,7 +28,7 @@
         <th class="py-2 px-3">Kanal</th>
         <th class="py-2 px-3">Donatur</th>
         <th class="py-2 px-3">Earmark</th>
-        <th class="py-2 px-3">Jumlah</th>
+        <th class="py-2 px-3 text-right">Jumlah</th>
         <th class="py-2 px-3">Status</th>
         <th class="py-2 px-3 w-48">Aksi</th>
       </tr>
@@ -41,7 +41,7 @@
         <td class="py-2 px-3 uppercase">{{ $r->channel }}</td>
         <td class="py-2 px-3">{{ $r->donor->name ?? '-' }}</td>
         <td class="py-2 px-3">{{ $r->program->name ?? 'General Fund' }}</td>
-        <td class="py-2 px-3">Rp {{ number_format($r->amount,0,',','.') }}</td>
+        <td class="py-2 px-3 text-right">Rp {{ number_format($r->amount,0,',','.') }}</td>
         <td class="py-2 px-3">{{ $r->status }}</td>
         <td class="py-2 px-3">
           <div class="flex gap-2">
