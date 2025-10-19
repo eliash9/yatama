@@ -1,4 +1,4 @@
-@extends('layouts.public')
+﻿@extends('layouts.public')
 @section('content')
   <div class="mb-3">
     @if($program->banner_url)
@@ -26,7 +26,7 @@
 
   <div class="bg-white rounded-xl shadow p-4 mb-4">
     <h3 class="font-medium mb-2">Dukung Program</h3>
-    <form method="POST" action="{{ route('public.donation.checkout') }}" class="space-y-3">
+    <form id="program-donate-form" method="POST" action="{{ route('public.donation.checkout') }}" class="space-y-3">
       @csrf
       <input type="hidden" name="program_id" value="{{ $program->id }}" />
       <div>
@@ -34,19 +34,41 @@
         <input type="number" name="amount" min="10000" required placeholder="50000" class="w-full border rounded-lg px-4 py-3" />
       </div>
       <div>
-        <label class="block text-sm text-gray-600 mb-2">Kanal Pembayaran</label>
-        <div class="grid grid-cols-2 gap-3 text-sm">
+        <label class="block text-sm text-gray-600 mb-2">Metode Pembayaran</label>
+        <div class="grid grid-cols-3 gap-2 text-sm">
           <label class="border rounded-lg px-3 py-3 flex items-center gap-2">
-            <input type="radio" name="channel" value="transfer" required /> <span>Transfer</span>
+            <input type="radio" name="channel" value="transfer" required onclick="togglePay()" /> <span>Bank</span>
           </label>
           <label class="border rounded-lg px-3 py-3 flex items-center gap-2">
-            <input type="radio" name="channel" value="qris" required /> <span>QRIS</span>
+            <input type="radio" name="channel" value="ewallet" required onclick="togglePay()" /> <span>E-Wallet</span>
+          </label>
+          <label class="border rounded-lg px-3 py-3 flex items-center gap-2">
+            <input type="radio" name="channel" value="qris" required onclick="togglePay()" /> <span>QRIS</span>
           </label>
         </div>
+        <div id="bankSelect" class="mt-2 hidden">
+          <label class="block text-sm text-gray-600 mb-1">Pilih Bank</label>
+          <select name="provider" class="w-full border rounded-lg px-3 py-2">
+            <option value="">-- Pilih --</option>
+            <option value="BCA">BCA</option>
+            <option value="BNI">BNI</option>
+            <option value="MANDIRI">Mandiri</option>
+          </select>
+        </div>
+        <div id="ewalletSelect" class="mt-2 hidden">
+          <label class="block text-sm text-gray-600 mb-1">Pilih E-Wallet</label>
+          <select name="provider" class="w-full border rounded-lg px-3 py-2">
+            <option value="">-- Pilih --</option>
+            <option value="OVO">OVO</option>
+            <option value="GOPAY">GoPay</option>
+            <option value="DANA">DANA</option>
+          </select>
+        </div>
         @if(!$qrisUrl)
-          <p class="text-xs text-amber-600 mt-1">QRIS statis belum dikonfigurasi (DONATION_QRIS_URL).</p>
+          <p class="text-xs text-amber-600 mt-2">QRIS statis belum dikonfigurasi (DONATION_QRIS_URL).</p>
         @endif
       </div>
+      @unless(session('donor_id'))
       <div class="grid grid-cols-1 gap-3">
         <div>
           <label class="block text-sm text-gray-600 mb-1">Nama</label>
@@ -61,6 +83,7 @@
           <input name="phone" placeholder="08xxxx" class="w-full border rounded-lg px-4 py-3" />
         </div>
       </div>
+      @endunless
       <div>
         <label class="block text-sm text-gray-600 mb-1">Catatan (opsional)</label>
         <textarea name="notes" rows="2" class="w-full border rounded-lg px-4 py-3" placeholder="Doa/dukungan untuk program"></textarea>
@@ -85,4 +108,16 @@
       @endforelse
     </div>
   </div>
+
+  <script>
+    function togglePay(){
+      const ch = document.querySelector('input[name=channel]:checked');
+      const bank = document.getElementById('bankSelect');
+      const ew = document.getElementById('ewalletSelect');
+      if(!ch){ bank.classList.add('hidden'); ew.classList.add('hidden'); return; }
+      if(ch.value==='transfer'){ bank.classList.remove('hidden'); ew.classList.add('hidden'); }
+      else if(ch.value==='ewallet'){ ew.classList.remove('hidden'); bank.classList.add('hidden'); }
+      else { bank.classList.add('hidden'); ew.classList.add('hidden'); }
+    }
+  </script>
 @endsection

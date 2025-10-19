@@ -1,8 +1,8 @@
-@extends('layouts.public')
+﻿@extends('layouts.public')
 @section('content')
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-semibold">Laporan Penyaluran</h1>
-  <a href="{{ route('public.donor.dashboard') }}" class="text-sm text-gray-600 underline">Dashboard</a>
+  <a href="{{ route('public.donation.account.dashboard') }}" class="text-sm text-gray-600 underline">Dashboard</a>
 </div>
 
 <div class="bg-white rounded-xl shadow p-4">
@@ -22,4 +22,8 @@
   </table>
 </div>
 @endsection
+
+
+
+
 

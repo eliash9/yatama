@@ -1,9 +1,19 @@
-@extends('layouts.public')
+﻿@extends('layouts.public')
 @section('content')
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-semibold">Akun Donatur</h1>
-  <form method="POST" action="{{ route('public.donor.logout') }}">@csrf <button class="text-sm text-gray-600 underline">Keluar</button></form>
+  <form method="POST" action="{{ route('public.donation.account.logout') }}">@csrf <button class="text-sm text-gray-600 underline">Keluar</button></form>
   </div>
+
+<div class="bg-white rounded-xl shadow p-4 mb-4">
+  <div class="font-medium mb-2">Profil</div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+    <div><div class="text-gray-500">Nama</div><div class="font-medium">{{ $donor->name }}</div></div>
+    <div><div class="text-gray-500">Email</div><div class="font-medium">{{ $donor->email ?? '-' }}</div></div>
+    <div><div class="text-gray-500">Nomor HP</div><div class="font-medium">{{ $donor->phone ?? '-' }}</div></div>
+    <div class="sm:col-span-2"><div class="text-gray-500">Alamat</div><div class="font-medium">{{ $donor->address ?? '-' }}</div></div>
+  </div>
+</div>
 
 <div class="bg-white rounded-xl shadow p-4 mb-4">
   <div class="text-sm text-gray-500">Total Donasi</div>
@@ -39,4 +49,7 @@
   </table>
 </div>
 @endsection
+
+
+
 

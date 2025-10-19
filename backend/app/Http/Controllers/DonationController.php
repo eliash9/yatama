@@ -35,7 +35,8 @@ class DonationController extends Controller
             'phone' => 'nullable|string|max:30',
             'program_id' => 'nullable|exists:programs,id',
             'amount' => 'required|integer|min:10000',
-            'channel' => 'required|in:transfer,qris',
+            'channel' => 'required|in:transfer,qris,ewallet',
+            'provider' => 'nullable|string|max:50',
             'notes' => 'nullable|string|max:500',
         ]);
 
@@ -59,6 +60,14 @@ class DonationController extends Controller
         $receipt = $this->generateReceiptNo();
         $ref = strtoupper(Str::uuid()->toString());
 
+        // Combine user note with meta for payment instructions
+        $userNote = trim($data['notes'] ?? '');
+        $meta = [
+            'channel' => $data['channel'],
+            'provider' => $data['provider'] ?? null,
+        ];
+        $notesCombined = ($userNote ? ($userNote.' ') : '') . '[meta='.json_encode($meta).']';
+
         $income = Income::create([
             'receipt_no' => $receipt,
             'tanggal' => date('Y-m-d'),
@@ -68,7 +77,7 @@ class DonationController extends Controller
             'program_id' => $data['program_id'] ?? null,
             'status' => 'recorded',
             'ref_no' => $ref,
-            'notes' => $data['notes'] ?? null,
+            'notes' => $notesCombined ?: null,
         ]);
 
         return redirect()->route('public.donation.status', ['ref' => $income->ref_no]);
@@ -85,7 +94,26 @@ class DonationController extends Controller
             return back()->withErrors(['ref'=>'Ref tidak ditemukan']);
         }
         $qrisUrl = env('DONATION_QRIS_URL');
-        return view('public.donation.status', compact('row','qrisUrl'));
+
+        // Parse provider from notes meta suffix
+        $pay = ['channel' => $row->channel, 'provider' => null];
+        if ($row->notes && preg_match('/\[meta=(\{.*\})\]/', $row->notes, $m)) {
+            try { $meta = json_decode($m[1], true); if (is_array($meta)) { $pay = array_merge($pay, $meta); } } catch (\Throwable $e) {}
+        }
+
+        // Bank and ewallet accounts from env
+        $banks = [
+            'BCA' => ['account' => env('DONATION_BANK_BCA'), 'name' => env('DONATION_BANK_BCA_NAME')],
+            'BNI' => ['account' => env('DONATION_BANK_BNI'), 'name' => env('DONATION_BANK_BNI_NAME')],
+            'MANDIRI' => ['account' => env('DONATION_BANK_MANDIRI'), 'name' => env('DONATION_BANK_MANDIRI_NAME')],
+        ];
+        $ewallets = [
+            'OVO' => ['number' => env('DONATION_EWALLET_OVO'), 'name' => env('DONATION_EWALLET_OVO_NAME')],
+            'GOPAY' => ['number' => env('DONATION_EWALLET_GOPAY'), 'name' => env('DONATION_EWALLET_GOPAY_NAME')],
+            'DANA' => ['number' => env('DONATION_EWALLET_DANA'), 'name' => env('DONATION_EWALLET_DANA_NAME')],
+        ];
+
+        return view('public.donation.status', compact('row','qrisUrl','pay','banks','ewallets'));
     }
 
     public function thanks(Request $request)

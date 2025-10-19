@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardPageController;
@@ -107,7 +107,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:admin'])->group
 // Public donation pages (optional subdomain)
 Route::group([], function(){
     Route::get('/donasi', [\App\Http\Controllers\DonationController::class,'index'])->name('public.donation.index');
-    Route::get('/program/{program}', [\App\Http\Controllers\DonationController::class,'program'])->name('public.donation.program');
+    Route::get('/donasi/program/{program}', [\App\Http\Controllers\DonationController::class,'program'])->name('public.donation.program');
     Route::post('/donasi/checkout', [\App\Http\Controllers\DonationController::class,'checkout'])->name('public.donation.checkout');
     Route::get('/donasi/status', [\App\Http\Controllers\DonationController::class,'status'])->name('public.donation.status');
     Route::get('/donasi/thanks', [\App\Http\Controllers\DonationController::class,'thanks'])->name('public.donation.thanks');
@@ -116,15 +116,18 @@ Route::group([], function(){
 if ($domain = env('DONATION_DOMAIN')) {
     Route::domain($domain)->group(function(){
         Route::get('/', [\App\Http\Controllers\DonationController::class,'index'])->name('public.donation.index');
-        Route::get('/program/{program}', [\App\Http\Controllers\DonationController::class,'program'])->name('public.donation.program');
+        Route::get('/donasi/program/{program}', [\App\Http\Controllers\DonationController::class,'program'])->name('public.donation.program');
         Route::post('/checkout', [\App\Http\Controllers\DonationController::class,'checkout'])->name('public.donation.checkout');
         Route::get('/status', [\App\Http\Controllers\DonationController::class,'status'])->name('public.donation.status');
         Route::get('/thanks', [\App\Http\Controllers\DonationController::class,'thanks'])->name('public.donation.thanks');
     });
 }
 
-// Donor portal (public donor auth)
-Route::prefix('donor')->name('public.donor.')->group(function(){
+
+// Mirror donor portal under /donasi/akun (same controllers)
+Route::prefix('donasi/akun')->name('public.donation.account.')->group(function(){
+    Route::get('google/redirect', [\App\Http\Controllers\DonorAuthController::class,'redirectToGoogle'])->name('google.redirect');
+    Route::get('google/callback', [\App\Http\Controllers\DonorAuthController::class,'handleGoogleCallback'])->name('google.callback');
     Route::get('login', [\App\Http\Controllers\DonorAuthController::class,'showLogin'])->name('login');
     Route::post('request-code', [\App\Http\Controllers\DonorAuthController::class,'requestCode'])->name('request');
     Route::get('verify', [\App\Http\Controllers\DonorAuthController::class,'showVerify'])->name('verify');
@@ -136,3 +139,16 @@ Route::prefix('donor')->name('public.donor.')->group(function(){
     Route::post('donations/claim', [\App\Http\Controllers\DonorPortalController::class,'claim'])->name('donations.claim');
     Route::get('reports', [\App\Http\Controllers\DonorPortalController::class,'reports'])->name('reports');
 });
+
+
+
+
+
+
+
+
+
+
+
+
+

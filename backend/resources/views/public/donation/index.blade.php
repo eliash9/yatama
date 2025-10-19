@@ -1,4 +1,4 @@
-@extends('layouts.public')
+﻿@extends('layouts.public')
 @section('content')
   <!-- Hero / Slider -->
   <div class="mb-4">
@@ -20,17 +20,17 @@
 
   <!-- Shortcut Icons -->
   <div class="grid grid-cols-4 gap-3 text-center text-xs mb-4">
-    <a href="#programs" class="bg-white rounded-lg shadow p-3">🎯<div>Program</div></a>
-    <a href="{{ route('public.donation.status') }}" class="bg-white rounded-lg shadow p-3">🧾<div>Status</div></a>
-    <a href="{{ route('public.donor.login') }}" class="bg-white rounded-lg shadow p-3">👤<div>Akun</div></a>
-    <a href="{{ route('public.donation.index') }}" class="bg-white rounded-lg shadow p-3">💖<div>Donasi</div></a>
+    <a href="#programs" class="bg-white rounded-lg shadow p-3">ðŸŽ¯<div>Program</div></a>
+    <a href="{{ route('public.donation.status') }}" class="bg-white rounded-lg shadow p-3">ðŸ§¾<div>Status</div></a>
+    <a href="{{ route('public.donation.account.login') }}" class="bg-white rounded-lg shadow p-3">ðŸ‘¤<div>Akun</div></a>
+    <a href="{{ route('public.donation.index') }}" class="bg-white rounded-lg shadow p-3">ðŸ’–<div>Donasi</div></a>
   </div>
 
   <!-- CTA Register/Login -->
   <div class="bg-blue-600 text-white rounded-xl p-4 mb-4">
     <div class="font-medium">Jadilah Donatur Terdaftar</div>
     <div class="text-sm text-blue-100">Pantau donasi dan dampaknya.</div>
-    <a href="{{ route('public.donor.login') }}" class="inline-block mt-2 bg-white text-blue-700 rounded px-3 py-1.5 text-sm">Daftar / Masuk</a>
+    <a href="{{ route('public.donation.account.login') }}" class="inline-block mt-2 bg-white text-blue-700 rounded px-3 py-1.5 text-sm">Daftar / Masuk</a>
   </div>
 
   <!-- Program List -->
@@ -79,7 +79,7 @@
             <div class="font-medium">{{ $d->program->name ?? 'Program' }}</div>
             <div>Rp {{ number_format($d->amount,0,',','.') }}</div>
           </div>
-          <div class="text-xs text-gray-500">{{ $d->beneficiary->name ?? 'Penerima' }} — {{ optional($d->updated_at)->format('d M Y') }}</div>
+          <div class="text-xs text-gray-500">{{ $d->beneficiary->name ?? 'Penerima' }} â€” {{ optional($d->updated_at)->format('d M Y') }}</div>
           <div class="text-xs text-gray-600 mt-1">Kode: {{ $d->code }}</div>
         </div>
       @empty
@@ -125,3 +125,7 @@
     </div>
   </div>
 @endsection
+
+
+
+

@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Income;
@@ -23,7 +21,8 @@ class DonorPortalController extends Controller
         $byProgram = Income::select(DB::raw('COALESCE(program_id,0) as pid'), DB::raw('SUM(amount) as total'))
             ->where('donor_id',$donorId)->groupBy('pid')->get();
         $programNames = Program::whereIn('id', $byProgram->pluck('pid')->filter())->pluck('name','id');
-        return view('public.donor.dashboard', compact('recent','total','byProgram','programNames'));
+        $donor = \App\Models\Donor::findOrFail($donorId);
+        return view('public.donor.dashboard', compact('recent','total','byProgram','programNames','donor'));
     }
 
     public function donations(Request $request)
@@ -57,3 +56,6 @@ class DonorPortalController extends Controller
         return back()->with('status','Donasi berhasil ditautkan');
     }
 }
+
+
+
