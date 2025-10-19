@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('content')
 @include('partials.flash')
 
@@ -18,6 +18,36 @@
   <button class="px-3 py-2 bg-gray-100 rounded">Filter</button>
   <a href="{{ route('finance.incomes.index') }}" class="px-3 py-2 text-sm underline">Reset</a>
 </form>
+
+@if(isset($byStatus, $byChannel, $byProgram))
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+    <div class="bg-white rounded shadow p-3">
+      <div class="text-xs text-gray-500 mb-2">Per Status</div>
+      <ul class="text-sm space-y-1">
+        @foreach($byStatus as $s)
+          <li class="flex justify-between"><span class="capitalize">{{ $s->status ?? '-' }}</span><span>Rp {{ number_format($s->total,0,',','.') }}</span></li>
+        @endforeach
+      </ul>
+    </div>
+    <div class="bg-white rounded shadow p-3">
+      <div class="text-xs text-gray-500 mb-2">Per Kanal</div>
+      <ul class="text-sm space-y-1">
+        @foreach($byChannel as $c)
+          <li class="flex justify-between"><span class="uppercase">{{ $c->channel ?? '-' }}</span><span>Rp {{ number_format($c->total,0,',','.') }}</span></li>
+        @endforeach
+      </ul>
+    </div>
+    <div class="bg-white rounded shadow p-3">
+      <div class="text-xs text-gray-500 mb-2">Per Program (Top 5)</div>
+      <ul class="text-sm space-y-1">
+        @foreach($byProgram as $pgr)
+          @php $nm = $pgr->program_id ? ($programNames[$pgr->program_id] ?? ('Program #'.$pgr->program_id)) : 'General Fund'; @endphp
+          <li class="flex justify-between"><span>{{ $nm }}</span><span>Rp {{ number_format($pgr->total,0,',','.') }}</span></li>
+        @endforeach
+      </ul>
+    </div>
+  </div>
+@endif
 
 <div class="bg-white rounded shadow overflow-x-auto">
   <table class="min-w-full text-sm">

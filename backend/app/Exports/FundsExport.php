@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Exports;
 
@@ -18,7 +18,7 @@ class FundsExport implements FromArray, WithHeadings, Responsable
 
     public function array(): array
     {
-        $inc = Income::query(); if ($this->from) $inc->where('tanggal','>=',$this->from); if ($this->to) $inc->where('tanggal','<=',$this->to);
+        $inc = Income::query()->where(function(){->where('status','matched')->orWhere('channel','tunai');}); if ($this->from) $inc->where('tanggal','>=',$this->from); if ($this->to) $inc->where('tanggal','<=',$this->to);
         $earmark = (int) (clone $inc)->whereNotNull('program_id')->sum('amount');
         $general = (int) (clone $inc)->whereNull('program_id')->sum('amount');
         $spendProgram = (int) Transaksi::whereNotNull('program_id')
@@ -43,4 +43,5 @@ class FundsExport implements FromArray, WithHeadings, Responsable
         return ['Kategori','Jumlah'];
     }
 }
+
 

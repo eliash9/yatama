@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Exports;
 
@@ -26,7 +26,7 @@ class BalancesExport implements FromArray, WithHeadings, Responsable
             $rows[] = ['Account', $a->name, (int)$a->opening_balance + (int)$net];
         }
         // Program balances (incomes - spends)
-        $incomes = \App\Models\Income::select('program_id', DB::raw('SUM(amount) as total'))
+        $incomes = \App\Models\Income::select('program_id', DB::raw('SUM(amount) as total'))->where(function(){->where('status','matched')->orWhere('channel','tunai');})
             ->groupBy('program_id')->pluck('total','program_id');
         $spends = Transaksi::whereNotNull('program_id')
             ->select('program_id', DB::raw("SUM(CASE WHEN jenis='debit' THEN amount ELSE -amount END) as total"))
@@ -45,4 +45,5 @@ class BalancesExport implements FromArray, WithHeadings, Responsable
         return ['Tipe','Nama','Saldo'];
     }
 }
+
 

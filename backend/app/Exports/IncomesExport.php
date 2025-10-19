@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Exports;
 
@@ -21,8 +21,7 @@ class IncomesExport implements FromCollection, WithHeadings, WithMapping, Respon
         return Income::with(['donor','program'])
             ->when($this->from, fn($q)=>$q->where('tanggal','>=',$this->from))
             ->when($this->to, fn($q)=>$q->where('tanggal','<=',$this->to))
-            ->orderByDesc('tanggal')
-            ->get();
+            ->where(function(){->where('status','matched')->orWhere('channel','tunai');})\n            ->orderByDesc('tanggal')\n            ->get();
     }
 
     public function headings(): array
@@ -44,4 +43,5 @@ class IncomesExport implements FromCollection, WithHeadings, WithMapping, Respon
         ];
     }
 }
+
 

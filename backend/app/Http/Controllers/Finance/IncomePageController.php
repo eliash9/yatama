@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
@@ -10,6 +9,7 @@ use App\Models\Lampiran;
 use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class IncomePageController extends Controller
 {
@@ -25,7 +25,22 @@ class IncomePageController extends Controller
             });
         }
         $rows = $q->orderByDesc('tanggal')->paginate(10)->withQueryString();
-        return view('finance.incomes.index', compact('rows'));
+
+        // Ringkasan kecil: per status, per kanal, per program (top 5)
+        $byStatus = (clone $q)
+            ->select('status', DB::raw('COUNT(*) as cnt'), DB::raw('SUM(amount) as total'))
+            ->groupBy('status')->get();
+        $byChannel = (clone $q)
+            ->select('channel', DB::raw('COUNT(*) as cnt'), DB::raw('SUM(amount) as total'))
+            ->groupBy('channel')->get();
+        $byProgram = (clone $q)
+            ->select('program_id', DB::raw('COUNT(*) as cnt'), DB::raw('SUM(amount) as total'))
+            ->groupBy('program_id')
+            ->orderBy(DB::raw('SUM(amount)'), 'DESC')->limit(5)->get();
+        $programNames = Program::whereIn('id', $byProgram->pluck('program_id')->filter())
+            ->pluck('name','id');
+
+        return view('finance.incomes.index', compact('rows','byStatus','byChannel','byProgram','programNames'));
     }
 
     public function create()

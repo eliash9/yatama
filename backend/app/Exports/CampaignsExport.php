@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Exports;
 
@@ -17,8 +17,7 @@ class CampaignsExport implements FromArray, WithHeadings, Responsable
     {
         $rows = [];
         $programs = Program::orderBy('name')->get(['id','name']);
-        $totals = Income::select('program_id', DB::raw('SUM(amount) as total'))
-            ->whereNotNull('program_id')->groupBy('program_id')->pluck('total','program_id');
+        $totals = Income::select('program_id', DB::raw('SUM(amount) as total'))->where(function(){->where('status','matched')->orWhere('channel','tunai');})->whereNotNull('program_id')->groupBy('program_id')->pluck('total','program_id');
         foreach ($programs as $p) {
             $rows[] = [$p->name, (int)($totals[$p->id] ?? 0)];
         }
@@ -30,4 +29,5 @@ class CampaignsExport implements FromArray, WithHeadings, Responsable
         return ['Program','Total Penerimaan'];
     }
 }
+
 
